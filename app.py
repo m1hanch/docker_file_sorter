@@ -15,14 +15,14 @@ def translate(name):
     name = name.translate(TRANS)
     return name
 
-#змінює назви з кирилиці на латиницю
+#changes cyrillic symbols to latin
 def normalize(path_to_folder) -> None:
     for filename in os.listdir(path_to_folder):
         original_name = os.path.join(path_to_folder,filename)
         new_name = os.path.join(path_to_folder,translate(filename))
         os.rename(original_name, new_name)
 
-#видалення пустих папок
+#deletes empty folders
 def delete_empty_folders(directory):
     ignore_folders = ['archives', 'images','video','documents','audio']
     for root, dirs, files in os.walk(directory, topdown=False):
@@ -31,7 +31,7 @@ def delete_empty_folders(directory):
             if not os.listdir(folder_path) and not str(folder) in ignore_folders:  # Check if the folder is empty
                 os.rmdir(folder_path)
 
-#назва папки у яку має бути переміщений файл
+#name of destination folder for the file
 def dst_folder(filename):
     extensions = {"images": ['JPEG', 'PNG', 'JPG', 'SVG'], 'video': ['AVI', 'MP4', 'MOV', 'MKV'],
                   'documents': ['DOC', 'DOCX', 'TXT', 'PDF', 'XLSX', 'PPTX'], 'audio': ['MP3', 'OGG', 'WAV', 'AMR'],
@@ -41,14 +41,14 @@ def dst_folder(filename):
             if filename.upper().endswith('.' + value):
                 return key
 
-#Переміщення файлів
+#Moving files to appropriate directories
 def move_folders(directory):
     for item in os.listdir(directory):
         if not os.path.isdir(os.path.join(directory,item)):
             src = os.path.join(directory,item)
             if dst_folder(item) is not None:
                 dst = os.path.join(directory,dst_folder(item))
-                #розпакування архівів
+                #unzipping archives
                 if item.endswith(('.zip', '.gz', '.tar')):
                     shutil.unpack_archive(src, os.path.join(directory,'archives'))
                     os.remove(src)
@@ -57,18 +57,18 @@ def move_folders(directory):
         if os.path.isdir(os.path.join(directory,item)) and item!='video':
             move_folders(os.path.join(directory,item))
 
-#головна функція для сортування файлів
+#main sorting function
 def sorting(directory):
     normalize(directory)
-    # створення потрібних папок
+    # creating necessary directories
     ignore_folders = ['archives', 'images', 'video', 'documents', 'audio']
     for folder in ignore_folders:
         if not os.path.exists((os.path.join(directory, folder))):
             os.mkdir(os.path.join(directory, folder))
 
-    #сортування файлів по відповідним папкам
+    #Moving files to appropriate directories
     move_folders(directory)
-    #видалення усіх пустих папок, що залишились
+    #deleting of empty folders
     delete_empty_folders(directory)
 def run():
     try:
